@@ -14,33 +14,47 @@ import Home from './pages/Home/index.tsx'
 import { useWeather } from './hooks/useWeather.ts'
 import { useGeolocation } from './hooks/useGeolocation.ts'
 import { usePersistentState } from './hooks/usePersistentState.ts'
-import { CURRENT_LOCATION_ID } from './api/geolocation.ts'
+import { canLocateSilently, CURRENT_LOCATION_ID } from './api/geolocation.ts'
 import type { SearchBarHandle } from './components/SearchBar/types.ts'
 import type { Place, TemperatureUnit } from './types.ts'
 
 const LAST_PLACE_KEY = 'weather-app:last-place'
 const UNIT_KEY = 'weather-app:unit'
+/** 記住「上次看的是目前位置」這件事（只存布林值，不存座標） */
+const PREFER_CURRENT_KEY = 'weather-app:prefer-current-location'
 
 export default function App() {
   const [savedPlace, setSavedPlace] = usePersistentState<Place | null>(LAST_PLACE_KEY, null)
   const [unit, setUnit] = usePersistentState<TemperatureUnit>(UNIT_KEY, 'C')
+  const [preferCurrentLocation, setPreferCurrentLocation] = usePersistentState<boolean>(
+    PREFER_CURRENT_KEY,
+    false,
+  )
 
-  // 還原上次的地點，但「目前位置」不還原：座標是會變的，
+  // 還原上次的地點，但「目前位置」不還原座標：座標是會變的，
   // 套用舊座標會顯示錯誤地點的天氣，而使用者不會察覺。
   const restoredPlace = savedPlace && savedPlace.id !== CURRENT_LOCATION_ID ? savedPlace : null
 
   const { status, place, result, error, selectPlace, retry } = useWeather(restoredPlace)
-  const { status: locateStatus, error: locateError, canRetry, locate } = useGeolocation()
+  const {
+    status: locateStatus,
+    error: locateError,
+    canRetry,
+    locate,
+    reset: resetLocate,
+  } = useGeolocation()
 
   // 只記住「真的載入成功」的地點：若某個城市一直連不上，
   // 下次打開時不該又卡在同一個失敗的地方。
-  // 「目前位置」同樣不寫入——除了上面的理由，自動重新定位還會在
-  // 沒有使用者手勢的情況下彈出權限詢問，那是很差的體驗。
+  //
+  // 「目前位置」改成只記一個旗標（不記座標）：
+  // 座標會過期，但「使用者上次想看的是目前位置」這個意圖不會。
   useEffect(() => {
     if (!result) return
-    if (result.place.id === CURRENT_LOCATION_ID) return
-    setSavedPlace(result.place)
-  }, [result, setSavedPlace])
+    const isCurrentLocation = result.place.id === CURRENT_LOCATION_ID
+    setPreferCurrentLocation(isCurrentLocation)
+    if (!isCurrentLocation) setSavedPlace(result.place)
+  }, [result, setSavedPlace, setPreferCurrentLocation])
 
   const handleSelectPlace = useCallback(
     (nextPlace: Place) => {
@@ -62,6 +76,33 @@ export default function App() {
       searchBarRef.current?.clear()
     })
   }, [locate, selectPlace])
+
+  /*
+   * 重新整理後若「上次看的是目前位置」，就自動補一次定位。
+   *
+   * 兩個前提，缺一不可：
+   *  1. 權限必須已經是 granted —— 這時 getCurrentPosition 不會彈出詢問框，
+   *     等於是把使用者已經做過的決定再執行一次，不算打擾；
+   *  2. 失敗要靜默 —— 自動行為失敗不該主動彈錯誤打斷使用者，
+   *     畫面維持在已還原的城市就好，使用者想重試可以自己按按鈕。
+   */
+  const autoLocateAttemptedRef = useRef(false)
+  useEffect(() => {
+    if (autoLocateAttemptedRef.current) return
+    autoLocateAttemptedRef.current = true
+    if (!preferCurrentLocation) return
+
+    void canLocateSilently().then((allowed) => {
+      if (!allowed) return
+      void locate().then((locatedPlace) => {
+        if (locatedPlace) {
+          selectPlace(locatedPlace)
+          return
+        }
+        resetLocate()
+      })
+    })
+  }, [preferCurrentLocation, locate, resetLocate, selectPlace])
 
   return (
     <Home

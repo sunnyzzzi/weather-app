@@ -70,6 +70,28 @@ function toGeolocationError(error: GeolocationPositionError): GeolocationError {
   }
 }
 
+/**
+ * 能不能「不打擾使用者」地自動定位。
+ *
+ * 只有權限已經是 granted 時才回傳 true：這時呼叫 getCurrentPosition 不會彈出詢問框，
+ * 所以可以在頁面載入時自動執行，讓使用者重新整理後仍停留在「目前位置」。
+ *
+ * 其他情況一律回傳 false（包含 Permissions API 不存在、或不認得 geolocation 這個權限名的瀏覽器）：
+ * 在沒有使用者手勢時彈出權限詢問，是行動版最趕客的體驗，寧可不做。
+ */
+export async function canLocateSilently(): Promise<boolean> {
+  if (!isGeolocationAvailable()) return false
+  if (typeof navigator === 'undefined' || !navigator.permissions?.query) return false
+
+  try {
+    const status = await navigator.permissions.query({ name: 'geolocation' })
+    return status.state === 'granted'
+  } catch {
+    // Safari 等瀏覽器對不支援的權限名會丟 TypeError，視為「不能靜默定位」
+    return false
+  }
+}
+
 export interface GeolocationRequestOptions {
   /** 逾時（毫秒）。定位可能卡很久（室內、GPS 冷啟動），一定要設上限 */
   timeout?: number
