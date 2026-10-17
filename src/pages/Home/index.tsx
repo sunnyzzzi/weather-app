@@ -36,6 +36,7 @@ export default function Home({
   locateError,
   canRetryLocate,
   onLocate,
+  searchBarRef,
 }: HomeProps) {
   const hasData = Boolean(result)
   const isRefreshing = status === 'loading' && hasData
@@ -63,7 +64,7 @@ export default function Home({
       <main className="app__main">
         <div className="app__search">
           <div className="app__search-row">
-            <SearchBar onSelect={onSelectPlace} />
+            <SearchBar ref={searchBarRef} onSelect={onSelectPlace} />
             <LocateButton status={locateStatus} onClick={onLocate} />
           </div>
 

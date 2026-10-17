@@ -6,6 +6,8 @@
  * 這樣 src/types.ts 不會隨著功能增加而無限膨脹，
  * 元件目錄也能自成一個可搬動的單元。
  */
+import type { RefObject } from 'react'
+import type { SearchBarHandle } from '../../components/SearchBar/types.ts'
 import type {
   GeolocationStatus,
   Place,
@@ -36,6 +38,11 @@ export interface HomeProps {
   canRetryLocate: boolean
   /** 使用者按下「使用我的位置」（同時也是定位失敗後的「重試」） */
   onLocate: () => void
+  /**
+   * 搜尋列的命令式把手。定位成功後要由外層清掉輸入框，
+   * 但搜尋狀態仍歸搜尋列自己管，所以這裡只傳 ref 而不是把 keyword 提升上來。
+   */
+  searchBarRef: RefObject<SearchBarHandle>
   /** 使用者切換 °C / °F */
   onUnitChange: (unit: TemperatureUnit) => void
   /** 使用者按下「重試」 */

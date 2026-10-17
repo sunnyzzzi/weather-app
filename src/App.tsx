@@ -9,12 +9,13 @@
  * 版面與「什麼狀態顯示什麼」的判斷都在 pages/Home 裡，
  * 所以未來要加路由或第二個頁面時，這個檔案只會多一行切換，不會變長。
  */
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import Home from './pages/Home/index.tsx'
 import { useWeather } from './hooks/useWeather.ts'
 import { useGeolocation } from './hooks/useGeolocation.ts'
 import { usePersistentState } from './hooks/usePersistentState.ts'
 import { CURRENT_LOCATION_ID } from './api/geolocation.ts'
+import type { SearchBarHandle } from './components/SearchBar/types.ts'
 import type { Place, TemperatureUnit } from './types.ts'
 
 const LAST_PLACE_KEY = 'weather-app:last-place'
@@ -48,11 +49,17 @@ export default function App() {
     [selectPlace],
   )
 
+  const searchBarRef = useRef<SearchBarHandle>(null)
+
   // 定位成功後，把座標包成的 Place 交給既有的天氣狀態機，
   // 後面的載入、競態保護、錯誤降級全部沿用同一條路徑。
   const handleLocate = useCallback(() => {
     void locate().then((locatedPlace) => {
-      if (locatedPlace) selectPlace(locatedPlace)
+      if (!locatedPlace) return
+      selectPlace(locatedPlace)
+      // 順手清掉搜尋框：留著上一次的關鍵字（或回填的地名）會讓人以為
+      // 畫面上顯示的仍是那個地點的天氣，而不是「目前位置」。
+      searchBarRef.current?.clear()
     })
   }, [locate, selectPlace])
 
@@ -70,6 +77,7 @@ export default function App() {
       locateError={locateError}
       canRetryLocate={canRetry}
       onLocate={handleLocate}
+      searchBarRef={searchBarRef}
     />
   )
 }

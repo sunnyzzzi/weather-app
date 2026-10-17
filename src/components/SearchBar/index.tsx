@@ -6,14 +6,17 @@
  *    對外只暴露一個 onSelect(place)，App 不需要知道搜尋是怎麼實作的；
  *  - 搜尋相關的錯誤只在下拉框裡呈現，不會污染主天氣區的錯誤狀態。
  */
-import { useEffect, useId, useRef, useState } from 'react'
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { usePlaceSearch } from '../../hooks/usePlaceSearch.ts'
 import type { Place } from '../../types.ts'
-import type { SearchBarProps } from './types.ts'
+import type { SearchBarHandle, SearchBarProps } from './types.ts'
 import './index.less'
 
-export default function SearchBar({ onSelect, autoFocus = false }: SearchBarProps) {
+const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(function SearchBar(
+  { onSelect, autoFocus = false },
+  ref,
+) {
   const { keyword, searchState, updateKeyword, fillKeyword, resetSearch } = usePlaceSearch()
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
@@ -29,6 +32,20 @@ export default function SearchBar({ onSelect, autoFocus = false }: SearchBarProp
   useEffect(() => {
     setActiveIndex(-1)
   }, [results])
+
+  // 對外只開一個最小的洞：清空。外層（例如定位成功後）可以命令它，
+  // 但拿不到也改不到搜尋狀態本身。
+  useImperativeHandle(
+    ref,
+    () => ({
+      clear: () => {
+        resetSearch()
+        setOpen(false)
+        setActiveIndex(-1)
+      },
+    }),
+    [resetSearch],
+  )
 
   // 點擊元件外部時收合下拉框
   useEffect(() => {
@@ -140,7 +157,9 @@ export default function SearchBar({ onSelect, autoFocus = false }: SearchBarProp
       )}
     </div>
   )
-}
+})
+
+export default SearchBar
 
 /**
  * 決定選中地點後要回填到輸入框的文字。
