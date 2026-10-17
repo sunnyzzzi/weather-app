@@ -1,0 +1,106 @@
+/* 未來 7 天：溫度範圍以長條呈現，長條位置是相對「本週最低／最高」計算的。 */
+
+.daily {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daily__row {
+  display: grid;
+  grid-template-columns: 76px 1fr 62px 200px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 4px;
+  border-top: 1px solid var(--border);
+
+  &:first-child {
+    border-top: 0;
+  }
+}
+
+.daily__when {
+  display: flex;
+  flex-direction: column;
+}
+
+.daily__weekday {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.daily__date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.daily__condition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.daily__icon {
+  font-size: 20px;
+}
+
+.daily__label {
+  font-size: 13px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily__rain {
+  font-size: 12px;
+  color: #3d78d8;
+  text-align: right;
+}
+
+.daily__range {
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  gap: 8px;
+}
+
+.daily__temp {
+  font-size: 13px;
+  font-weight: 600;
+
+  &.daily__temp--min {
+    color: var(--text-muted);
+    text-align: right;
+  }
+}
+
+.daily__track {
+  position: relative;
+  height: 6px;
+  background: var(--surface-muted);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.daily__bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #7fb0f5, #f2a83b);
+}
+
+@media (max-width: 640px) {
+  .daily__row {
+    grid-template-columns: 60px 1fr 150px;
+  }
+
+  /* 手機上把「降雨機率」併入天氣描述列，避免擠成三欄看不清楚 */
+  .daily__rain {
+    display: none;
+  }
+}

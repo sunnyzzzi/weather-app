@@ -1,0 +1,50 @@
+/* 未來 24 小時：橫向捲動的時序列。 */
+
+.hourly {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 2px 8px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hourly__item {
+  flex: 0 0 auto;
+  width: 66px;
+  padding: 10px 4px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  scroll-snap-align: start;
+
+  &:hover {
+    background: var(--surface-muted);
+  }
+}
+
+.hourly__time {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.hourly__icon {
+  margin: 6px 0;
+  font-size: 22px;
+}
+
+.hourly__temp {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hourly__rain {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #3d78d8;
+  /* 固定高度：降雨機率為 0 時用空白佔位，避免整列高度忽高忽低 */
+  min-height: 14px;
+}

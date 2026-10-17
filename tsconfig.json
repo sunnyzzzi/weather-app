@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    /* ES2022：Error 的 cause 選項（new Error(msg, { cause })）需要 ES2022 的型別定義 */
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler 模式：不產出 JS，交由 Vite 處理 */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* 型別檢查強度：這裡刻意開到近乎最嚴，
+       因為引入 TS 的目的就是讓「資料形狀」在編譯期就被約束住 */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

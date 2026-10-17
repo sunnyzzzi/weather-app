@@ -1,0 +1,184 @@
+/* =====================================================================
+   全域樣式：設計代幣（design tokens）、重置、與跨元件共用的基礎類別。
+
+   這個檔案刻意「只放真正全域的東西」：
+   元件自己的樣式請放在 components/<Name>/index.less，
+   頁面版面請放在 pages/<Name>/index.less。
+   這樣刪掉一個元件目錄時，它的樣式會一起消失，不會留下孤兒規則。
+
+   顏色一律走 CSS 變數（--accent 等），因此各別 .less 檔不需要 import 變數檔，
+   也不會因為重複 import 而讓 :root 被輸出多次。
+   ===================================================================== */
+
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --surface-muted: #f7f9fc;
+  --border: #e3e9f2;
+  --text: #16202e;
+  --text-muted: #66748a;
+  --accent: #2f6df0;
+  --accent-soft: #e8efff;
+  --danger: #d64545;
+  --danger-soft: #fdecec;
+  /* 載入指示器的黃色系：底環用極淺黃、轉動的弧用稍深的黃 */
+  --spinner-track: #fbeec4;
+  --spinner-arc: #f4c33a;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(20, 40, 80, 0.05);
+  --shadow-md: 0 10px 30px -12px rgba(20, 40, 80, 0.18);
+  --font: -apple-system, BlinkMacSystemFont, 'PingFang HK', 'PingFang TC', 'Microsoft JhengHei',
+    'Noto Sans TC', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: var(--accent);
+}
+
+/*
+ * 螢幕閱讀器專用：視覺上隱藏，但仍在無障礙樹中。
+ *
+ * 注意：position: absolute 的包含塊會一路往上找，若最近的定位祖先不在
+ * 捲動容器內，這個元素就不會被容器裁切，反而會把整份文件撐出橫向捲軸。
+ * 因此不要在 overflow 容器內使用它 —— 那種情境請改用 aria-label。
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ------------------------------ 基礎容器 ------------------------------ */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* 卡片內的文字區塊：標題 + 內容，逐時／逐日預報共用 */
+.section {
+  padding: 20px;
+
+  .section__title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+}
+
+/* ------------------------------ 按鈕 ------------------------------ */
+
+.button {
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.button--primary {
+  background: var(--accent);
+  color: #fff;
+
+  &:hover {
+    background: #2557c9;
+  }
+}
+
+.button--ghost {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* ------------------------------ 載入指示器 ------------------------------ */
+
+/*
+ * 純 CSS 旋轉圓環，不依賴任何圖片資源（圖片本身也可能載入失敗）。
+ * 刻意不走 --accent：那會隨天氣狀態變色（雨天藍、雪天青），
+ * 但「正在載入」屬於介面狀態而非天氣資訊，應該是固定的黃色系。
+ */
+.spinner {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--spinner-track);
+  border-top-color: var(--spinner-arc);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+
+  &.spinner--sm {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------ 減少動態效果 ------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  /* 動畫被停用後，旋轉圓環會定格成一個普通的圈，看起來像壞掉的邊框 —— 直接收掉 */
+  .spinner {
+    display: none;
+  }
+}

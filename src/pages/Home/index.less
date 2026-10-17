@@ -1,0 +1,149 @@
+/* =====================================================================
+   Home 頁面版面。
+
+   這裡只放「頁面骨架」與「首頁專屬的空狀態 / 熱門城市捷徑」：
+   元件內部的樣式一律在各自的 components/<Name>/index.less。
+   ===================================================================== */
+
+.app {
+  position: relative;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+}
+
+/* 裝飾用的柔光，不影響任何佈局與互動 */
+.app__glow {
+  position: fixed;
+  inset: -30% -10% auto -10%;
+  height: 60vh;
+  background: radial-gradient(60% 60% at 50% 0%, rgba(47, 109, 240, 0.16), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app__header,
+.app__main,
+.app__footer {
+  position: relative;
+  z-index: 1;
+}
+
+.app__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.app__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app__logo {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.app__title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+
+.app__subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.app__main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 搜尋列的定位容器：抬高 z-index 讓候選清單能蓋在下方卡片之上 */
+.app__search {
+  position: relative;
+  z-index: 10;
+}
+
+.app__refreshing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.app__content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  /* 背景更新時稍微壓暗，讓「資料正在刷新」這件事被看見，但不打斷閱讀 */
+  &[data-status='loading'] {
+    opacity: 0.72;
+    transition: opacity 0.2s ease;
+  }
+}
+
+.app__footer {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* -------------------------- 空狀態與熱門城市捷徑 -------------------------- */
+
+.intro {
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.intro__title {
+  margin: 0;
+  font-size: 17px;
+}
+
+.intro__text {
+  margin: 8px 0 18px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--text);
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    padding: 20px 14px 40px;
+  }
+}
