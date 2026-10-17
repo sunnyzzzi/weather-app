@@ -40,3 +40,13 @@
   width: 16px;
   font-size: 14px;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  /* 全域規則會把 .spinner 收掉（定格的圓圈看起來像壞掉的邊框），
+     這裡補一個靜態符號，讓「忙碌中」在關閉動畫時仍然看得出來。 */
+  .locate[aria-busy='true'] .locate__icon::after {
+    content: '⋯';
+    font-size: 14px;
+    line-height: 1;
+  }
+}

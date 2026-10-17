@@ -21,6 +21,22 @@ import {
 } from '../api/geolocation.ts'
 import type { GeolocationStatus, Place, UseGeolocation } from '../types.ts'
 
+/**
+ * 「定位中」至少要顯示這麼久。
+ *
+ * 為什麼需要這個下限？瀏覽器常常幾十毫秒就回傳座標（尤其 maximumAge 允許用快取時），
+ * 狀態會 idle → locating → idle 一閃而過。那個瞬間使用者並沒有「看懂」，
+ * 只會覺得按鈕抖了一下、像是壞掉。
+ * 與其顯示一個無法感知的狀態，不如多停留一下讓它真的被看見。
+ */
+const MIN_LOCATING_MS = 400
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 export type GeolocationAction =
   | { type: 'LOCATE_START' }
   | { type: 'LOCATE_SUCCESS' }
@@ -64,12 +80,22 @@ export function useGeolocation(): UseGeolocation {
   const [state, dispatch] = useReducer(geolocationReducer, initialGeolocationState)
 
   const locate = useCallback(async (): Promise<Place | null> => {
+    const startedAt = Date.now()
     dispatch({ type: 'LOCATE_START' })
+
+    /** 補足最短顯示時間：座標早就拿到了，也要讓「定位中」停留到看得見為止 */
+    const settle = async (): Promise<void> => {
+      const elapsed = Date.now() - startedAt
+      if (elapsed < MIN_LOCATING_MS) await delay(MIN_LOCATING_MS - elapsed)
+    }
+
     try {
       const coordinates = await getCurrentCoordinates()
+      await settle()
       dispatch({ type: 'LOCATE_SUCCESS' })
       return createCurrentLocationPlace(coordinates)
     } catch (error: unknown) {
+      await settle()
       dispatch({
         type: 'LOCATE_ERROR',
         error: error instanceof Error ? error : new Error(String(error)),
