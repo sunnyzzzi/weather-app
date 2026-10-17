@@ -23,6 +23,12 @@ export interface Place {
   population: number
 }
 
+/** 一組經緯度座標（瀏覽器定位的直接產物）。 */
+export interface Coordinates {
+  latitude: number
+  longitude: number
+}
+
 /** 溫度單位。 */
 export type TemperatureUnit = 'C' | 'F'
 
@@ -130,4 +136,36 @@ export interface UsePlaceSearch {
   /** 程式化填入（選中地點後回填），不會觸發搜尋 */
   fillKeyword: (value: string) => void
   resetSearch: () => void
+}
+
+/* ------------------------------------------------------------------ *
+ * 瀏覽器定位（navigator.geolocation）
+ * ------------------------------------------------------------------ */
+
+/**
+ * 定位失敗的原因分類。
+ * 區分它們的理由：使用者的「下一步」完全不同——
+ *  'permission'   要去瀏覽器設定裡開權限，再按一百次「重試」也沒用
+ *  'unsupported'  換環境（需要 HTTPS 或 localhost），不是重試能解決的
+ *  'timeout' / 'unavailable'  暫時性問題，重試有意義
+ */
+export type GeolocationErrorKind = 'unsupported' | 'permission' | 'unavailable' | 'timeout'
+
+/** 定位流程的狀態機狀態。 */
+export type GeolocationStatus = 'idle' | 'locating' | 'error'
+
+/** useGeolocation 對外暴露的 API。 */
+export interface UseGeolocation {
+  status: GeolocationStatus
+  /** 最近一次定位失敗的錯誤；成功或尚未嘗試時為 null */
+  error: Error | null
+  /** 這個錯誤值不值得顯示「重試」按鈕（權限被拒／環境不支援時不值得） */
+  canRetry: boolean
+  /**
+   * 觸發定位。成功回傳一個可直接送進天氣查詢的 Place，失敗回傳 null
+   * （失敗原因已寫入 status / error，呼叫端不必自己 try/catch）。
+   */
+  locate: () => Promise<Place | null>
+  /** 清除錯誤狀態 */
+  reset: () => void
 }

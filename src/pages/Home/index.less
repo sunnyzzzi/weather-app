@@ -73,6 +73,50 @@
   z-index: 10;
 }
 
+/* 搜尋框 + 定位按鈕：讓兩者等高（stretch），按鈕內容自己垂直置中 */
+.app__search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+
+  /* 第一個子元素（搜尋列）吃掉剩餘寬度。
+     min-width: 0 是必要的：flex 項目預設 min-width: auto，
+     在窄螢幕下會因為內容寬度而不肯縮小，把整列撐出橫向捲軸。 */
+  > *:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.app__locate-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.app__locate-retry {
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  &:hover {
+    background: rgba(214, 69, 69, 0.1);
+  }
+}
+
 .app__refreshing {
   display: flex;
   align-items: center;
@@ -145,5 +189,10 @@
 @media (max-width: 640px) {
   .app {
     padding: 20px 14px 40px;
+  }
+
+  /* 窄螢幕放不下「搜尋框 + 按鈕」並排，改成上下堆疊，按鈕撐滿寬度更好按 */
+  .app__search-row {
+    flex-direction: column;
   }
 }

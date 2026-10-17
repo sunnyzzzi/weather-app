@@ -1,0 +1,42 @@
+/* 「使用我的位置」按鈕。
+   高度交給外層的 flex 版面拉齊（align-items: stretch），這裡不寫死數值，
+   免得搜尋框的字級或 padding 一改，兩個元素就差幾像素對不齊。 */
+
+.locate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: none;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+
+  /* 停用（定位中）：保留原有配色但降一階存在感，不要整塊變灰像壞掉 */
+  &:disabled {
+    cursor: default;
+    color: var(--text-muted);
+  }
+}
+
+/* 圖示與轉圈共用同一個格子，切換時按鈕寬度才不會跳動 */
+.locate__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  font-size: 14px;
+}

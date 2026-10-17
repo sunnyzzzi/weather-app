@@ -18,6 +18,7 @@ import StatusMessage from '../../components/StatusMessage/index.tsx'
 import ErrorBanner from '../../components/ErrorBanner/index.tsx'
 import WeatherSkeleton from '../../components/WeatherSkeleton/index.tsx'
 import UnitToggle from '../../components/UnitToggle/index.tsx'
+import LocateButton from '../../components/LocateButton/index.tsx'
 import { POPULAR_PLACES } from '../../data/popularPlaces.ts'
 import type { HomeProps } from './types.ts'
 import './index.less'
@@ -31,6 +32,10 @@ export default function Home({
   onSelectPlace,
   onUnitChange,
   onRetry,
+  locateStatus,
+  locateError,
+  canRetryLocate,
+  onLocate,
 }: HomeProps) {
   const hasData = Boolean(result)
   const isRefreshing = status === 'loading' && hasData
@@ -57,7 +62,27 @@ export default function Home({
 
       <main className="app__main">
         <div className="app__search">
-          <SearchBar onSelect={onSelectPlace} />
+          <div className="app__search-row">
+            <SearchBar onSelect={onSelectPlace} />
+            <LocateButton status={locateStatus} onClick={onLocate} />
+          </div>
+
+          {/*
+            定位失敗是「附加動作失敗」，不是「天氣載入失敗」：
+            底下可能已經有別的地點資料在讀，所以用一條輕量提示，
+            不佔滿整頁、也不會蓋掉主要內容。
+          */}
+          {locateError && (
+            <p className="app__locate-error" role="alert">
+              <span aria-hidden="true">📍</span>
+              <span>{locateError.message}</span>
+              {canRetryLocate && (
+                <button type="button" className="app__locate-retry" onClick={onLocate}>
+                  重試
+                </button>
+              )}
+            </p>
+          )}
         </div>
 
         {isRefreshing && (
